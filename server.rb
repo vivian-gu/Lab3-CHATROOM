@@ -35,7 +35,7 @@ class Server
             client.puts "#{message}IP: #{ip}\nPort: #{@port}\nStudent ID: 14306748\n"
 
 
-        when /\AKILL_SERVICE\n\z/ then
+          when /\AKILL_SERVICE\n\z/ then
             self.shutdown
 
           when /\AJOIN_CHATROOM:/ then
@@ -44,9 +44,10 @@ class Server
             messageInput = message.split("\n")
             roomname = messageInput[0].split(":")[1].strip
             cname = messageInput[3].split(":")[1].strip
-          room,join_id = add_to_room(roomname,cname,client)
-          send_join_notify_to_room(room,cname)
-          ip = Socket.ip_address_list.find { |ai| ai.ipv4? && !ai.ipv4_loopback? }.ip_address
+
+            room,join_id = add_to_room(roomname,cname,client)
+            send_join_notify_to_room(room,cname)
+            ip = Socket.ip_address_list.find { |ai| ai.ipv4? && !ai.ipv4_loopback? }.ip_address
 
             client.puts "JOINED_CHATROOM: #{room.name}\nSERVER_IP: #{ip}\nPORT: #{@port}\nROOM_REF: #{room.ref}\nJOIN_ID: #{join_id}\n"
 
@@ -91,22 +92,20 @@ class Server
             cname = messageInput[2].split(":")[1].strip
             cmsg = messageInput[3].split(":")[1].strip
 
-        room = get_room_by_ref(roomRef)
-        the_client = room.get_client(joinid,cname)
-        if room == nil
-          client.puts "ERROR_CODE: 001\nERROR_DESCRIPTION: Invalid ROOMREF\n"
-        elsif the_client == nil
-          client.puts "ERROR_CODE: 002\nERROR_DESCRIPTION: This user does not exist in the room\n"
-        else
+            room = get_room_by_ref(roomRef)
+            the_client = room.get_client(joinid,cname)
+            if room == nil
+              client.puts "ERROR_CODE: 001\nERROR_DESCRIPTION: Invalid ROOMREF\n"
+            elsif the_client == nil
+              client.puts "ERROR_CODE: 002\nERROR_DESCRIPTION: This user does not exist in the room\n"
+            else
+              send_msg_to_all_in_room(room,the_client,cmsg)
+            end
 
-          send_msg_to_all_in_room(room,the_client,cmsg)
+        else
+          client.puts "ERROR_CODE: 000\nERROR_DESCRIPTION: Invalid command\n"
         end
-
-        else
-        client.puts "ERROR_CODE: 000\nERROR_DESCRIPTION: Invalid command\n"
-      end
     end
-
     }
   end
 
@@ -187,7 +186,7 @@ class Server
     @server.close
     Thread.list.each do |thread|
       thread.kill
-    end
+  end
   end
 
 end
@@ -230,4 +229,6 @@ class Client
     @connection = connection
   end
 end
+
+
 Server.new
